@@ -118,6 +118,9 @@ export const PRESET_MODELS: PresetModel[] = [
     { modelId: 'MiniMax-M2.1', name: 'MiniMax M2.1', type: 'llm', provider: 'minimax' },
     { modelId: 'MiniMax-M2.1-highspeed', name: 'MiniMax M2.1 Highspeed', type: 'llm', provider: 'minimax' },
     { modelId: 'MiniMax-M2', name: 'MiniMax M2', type: 'llm', provider: 'minimax' },
+    // DeepSeek 文本模型
+    { modelId: 'deepseek-chat', name: 'DeepSeek V3', type: 'llm', provider: 'deepseek' },
+    { modelId: 'deepseek-reasoner', name: 'DeepSeek R1', type: 'llm', provider: 'deepseek' },
 
     // 图像模型
     { modelId: 'banana', name: 'Banana Pro', type: 'image', provider: 'fal' },
@@ -205,6 +208,7 @@ export const PRESET_PROVIDERS: Omit<Provider, 'apiKey' | 'hasApiKey'>[] = [
     { id: 'minimax', name: 'MiniMax Hailuo', baseUrl: 'https://api.minimaxi.com/v1' },
     { id: 'vidu', name: 'Vidu' },
     { id: 'fal', name: 'FAL' },
+    { id: 'deepseek', name: 'DeepSeek', baseUrl: 'https://api.deepseek.com/v1' },
 ]
 
 const ZH_PROVIDER_NAME_MAP: Record<string, string> = {
@@ -213,6 +217,7 @@ const ZH_PROVIDER_NAME_MAP: Record<string, string> = {
     vidu: '生数科技 Vidu',
     bailian: '阿里云百炼',
     siliconflow: '硅基流动',
+    deepseek: '深度求索 DeepSeek',
 }
 
 function isZhLocale(locale?: string): boolean {

@@ -6063,5 +6063,41 @@
       "mode": "flat",
       "flatAmount": 0.5
     }
+  },
+  {
+    "apiType": "text",
+    "provider": "deepseek",
+    "modelId": "deepseek-chat",
+    "pricing": {
+      "mode": "capability",
+      "tiers": [
+        {
+          "when": { "tokenType": "input" },
+          "amount": 0.27
+        },
+        {
+          "when": { "tokenType": "output" },
+          "amount": 1.10
+        }
+      ]
+    }
+  },
+  {
+    "apiType": "text",
+    "provider": "deepseek",
+    "modelId": "deepseek-reasoner",
+    "pricing": {
+      "mode": "capability",
+      "tiers": [
+        {
+          "when": { "tokenType": "input" },
+          "amount": 0.55
+        },
+        {
+          "when": { "tokenType": "output" },
+          "amount": 2.19
+        }
+      ]
+    }
   }
 ]

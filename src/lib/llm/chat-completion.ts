@@ -359,6 +359,54 @@ export async function chatCompletion(
         return completion
       }
 
+      if (providerKey === 'deepseek') {
+        const client = new OpenAI({
+          baseURL: providerConfig.baseUrl || 'https://api.deepseek.com/v1',
+          apiKey: providerConfig.apiKey,
+        })
+
+        const isReasoner = resolvedModelId === 'deepseek-reasoner'
+        const deepseekParams: Record<string, unknown> = {}
+        // deepseek-reasoner does not support temperature
+        if (!isReasoner) {
+          deepseekParams.temperature = temperature
+        }
+
+        const completion = await client.chat.completions.create({
+          model: resolvedModelId,
+          messages: messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+          ...deepseekParams,
+        })
+        const normalizedCompletion = completion as OpenAI.Chat.Completions.ChatCompletion
+        const completionParts = getCompletionParts(normalizedCompletion)
+        logLlmRawOutput({
+          userId,
+          projectId,
+          provider: 'deepseek',
+          modelId: resolvedModelId,
+          modelKey: selection.modelKey,
+          stream: false,
+          action: options.action,
+          text: completionParts.text,
+          reasoning: completionParts.reasoning,
+          usage: completionUsageSummary(normalizedCompletion),
+        })
+        recordCompletionUsage(resolvedModelId, normalizedCompletion)
+        llmLogger.info({
+          action: 'llm.call.success',
+          message: 'llm call succeeded',
+          provider: 'deepseek',
+          durationMs: Date.now() - attemptStartedAt,
+          details: {
+            model: resolvedModelId,
+            attempt,
+            maxRetries,
+            engine: 'openai_sdk',
+          },
+        })
+        return completion
+      }
+
       if (!providerConfig.baseUrl) {
         throw new Error(`PROVIDER_BASE_URL_MISSING: ${provider} (llm)`)
       }

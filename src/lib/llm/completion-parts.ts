@@ -28,5 +28,18 @@ export function getCompletionParts(completion: OpenAI.Chat.Completions.ChatCompl
   }
 
   const content = message.content
-  return extractCompletionPartsFromContent(content)
+  const fromContent = extractCompletionPartsFromContent(content)
+
+  // DeepSeek R1 等模型将 reasoning_content 作为 message 的独立字段返回
+  // （而非嵌入在 content 中），需要显式提取
+  const messageRecord = message as Record<string, unknown>
+  const explicitReasoning =
+    typeof messageRecord.reasoning_content === 'string' && messageRecord.reasoning_content.trim()
+      ? (messageRecord.reasoning_content as string)
+      : ''
+
+  return {
+    text: fromContent.text,
+    reasoning: fromContent.reasoning || explicitReasoning,
+  }
 }

@@ -433,6 +433,123 @@ export async function chatCompletionStream(
       return completion
     }
 
+    if (providerKey === 'deepseek') {
+      const client = new OpenAI({
+        baseURL: providerConfig.baseUrl || 'https://api.deepseek.com/v1',
+        apiKey: providerConfig.apiKey,
+      })
+
+      const isReasoner = resolvedModelId === 'deepseek-reasoner'
+      const deepseekParams: Record<string, unknown> = {}
+      // deepseek-reasoner does not support temperature
+      if (!isReasoner) {
+        deepseekParams.temperature = options.temperature ?? 0.7
+      }
+
+      emitStreamStage(callbacks, streamStep, 'streaming', 'deepseek')
+      const stream = await client.chat.completions.create({
+        model: resolvedModelId,
+        messages,
+        stream: true,
+        ...deepseekParams,
+      } as unknown as OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming)
+
+      let text = ''
+      let reasoning = ''
+      let seq = 1
+      let finalCompletion: OpenAI.Chat.Completions.ChatCompletion | null = null
+      for await (const part of withStreamChunkTimeout(stream as AsyncIterable<unknown>)) {
+        const { textDelta, reasoningDelta } = extractStreamDeltaParts(part)
+        if (reasoningDelta) {
+          reasoning += reasoningDelta
+          emitStreamChunk(callbacks, streamStep, {
+            kind: 'reasoning',
+            delta: reasoningDelta,
+            seq,
+            lane: 'reasoning',
+          })
+          seq += 1
+        }
+        if (textDelta) {
+          text += textDelta
+          emitStreamChunk(callbacks, streamStep, {
+            kind: 'text',
+            delta: textDelta,
+            seq,
+            lane: 'main',
+          })
+          seq += 1
+        }
+      }
+
+      const finalChatCompletionFn = (stream as OpenAIStreamWithFinal)?.finalChatCompletion
+      if (typeof finalChatCompletionFn === 'function') {
+        try {
+          finalCompletion = await finalChatCompletionFn.call(stream)
+          const finalParts = getCompletionParts(finalCompletion)
+          if (finalParts.reasoning && finalParts.reasoning !== reasoning) {
+            const reasoningDelta = finalParts.reasoning.startsWith(reasoning)
+              ? finalParts.reasoning.slice(reasoning.length)
+              : finalParts.reasoning
+            if (reasoningDelta) {
+              emitStreamChunk(callbacks, streamStep, {
+                kind: 'reasoning',
+                delta: reasoningDelta,
+                seq,
+                lane: 'reasoning',
+              })
+              seq += 1
+            }
+            reasoning = finalParts.reasoning
+          }
+          if (finalParts.text && finalParts.text !== text) {
+            const textDelta = finalParts.text.startsWith(text)
+              ? finalParts.text.slice(text.length)
+              : finalParts.text
+            if (textDelta) {
+              emitStreamChunk(callbacks, streamStep, {
+                kind: 'text',
+                delta: textDelta,
+                seq,
+                lane: 'main',
+              })
+              seq += 1
+            }
+            text = finalParts.text
+          }
+        } catch {
+          // Ignore final aggregation errors and keep streamed content.
+        }
+      }
+
+      const completion = buildOpenAIChatCompletion(
+        resolvedModelId,
+        buildReasoningAwareContent(text, reasoning),
+        finalCompletion
+          ? {
+              promptTokens: Number(finalCompletion.usage?.prompt_tokens ?? 0),
+              completionTokens: Number(finalCompletion.usage?.completion_tokens ?? 0),
+            }
+          : undefined,
+      )
+      logLlmRawOutput({
+        userId,
+        projectId,
+        provider: 'deepseek',
+        modelId: resolvedModelId,
+        modelKey: selection.modelKey,
+        stream: true,
+        action: options.action,
+        text,
+        reasoning,
+        usage: completionUsageSummary(finalCompletion),
+      })
+      recordCompletionUsage(resolvedModelId, completion)
+      emitStreamStage(callbacks, streamStep, 'completed', 'deepseek')
+      callbacks?.onComplete?.(text, streamStep)
+      return completion
+    }
+
     if (providerKey !== 'ark') {
       if (!providerConfig.baseUrl) {
         throw new Error(`PROVIDER_BASE_URL_MISSING: ${provider} (llm)`)

@@ -20,6 +20,7 @@ export interface TestProviderResult {
 type PresetProviderType = 'ark' | 'google' | 'openrouter' | 'minimax' | 'fal' | 'vidu'
   | 'bailian'
   | 'siliconflow'
+  | 'deepseek'
 type CompatibleProviderType = 'openai-compatible' | 'gemini-compatible'
 
 type TestProviderPayload = {
@@ -579,6 +580,45 @@ async function testMiniMaxProvider(apiKey: string): Promise<TestProviderResult> 
 }
 
 // ---------------------------------------------------------------------------
+// DeepSeek
+// ---------------------------------------------------------------------------
+
+async function testDeepSeekProvider(apiKey: string, llmModel?: string): Promise<TestProviderResult> {
+  const steps: TestStep[] = []
+  const model = llmModel || 'deepseek-chat'
+
+  try {
+    const client = new OpenAI({
+      apiKey,
+      baseURL: 'https://api.deepseek.com/v1',
+      timeout: 30_000,
+    })
+    const response = await client.chat.completions.create({
+      model,
+      messages: [{ role: 'user', content: 'hi' }],
+      max_tokens: 20,
+      temperature: 0,
+    })
+    const answer = response.choices[0]?.message?.content?.trim() || ''
+    steps.push({
+      name: 'textGen',
+      status: 'pass',
+      model,
+      message: answer ? `Response: ${answer.slice(0, 80)}` : 'OK',
+    })
+    return { success: true, steps }
+  } catch (error) {
+    steps.push({
+      name: 'textGen',
+      status: 'fail',
+      model,
+      message: toErrorMessage(error),
+    })
+    return { success: false, steps }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // FAL.ai
 // ---------------------------------------------------------------------------
 
@@ -871,6 +911,8 @@ export async function testProviderConnection(payload: TestProviderPayload): Prom
       return testBailianProvider(apiKey)
     case 'siliconflow':
       return testSiliconFlowProvider(apiKey)
+    case 'deepseek':
+      return testDeepSeekProvider(apiKey, llmModel)
     default:
       return {
         success: false,

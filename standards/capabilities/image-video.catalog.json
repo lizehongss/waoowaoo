@@ -1136,5 +1136,21 @@
         "supportGenerateAudio": false
       }
     }
+  },
+  {
+    "modelType": "llm",
+    "provider": "deepseek",
+    "modelId": "deepseek-chat",
+    "capabilities": {
+      "llm": {}
+    }
+  },
+  {
+    "modelType": "llm",
+    "provider": "deepseek",
+    "modelId": "deepseek-reasoner",
+    "capabilities": {
+      "llm": {}
+    }
   }
 ]

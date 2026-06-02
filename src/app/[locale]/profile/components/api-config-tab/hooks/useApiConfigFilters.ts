@@ -29,6 +29,7 @@ const MODEL_PROVIDER_KEYS = [
   'minimax',
   'vidu',
   'fal',
+  'deepseek',
   'gemini-compatible',
   'openai-compatible',
 ]
