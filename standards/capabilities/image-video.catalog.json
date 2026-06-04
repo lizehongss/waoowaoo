@@ -535,6 +535,14 @@
     }
   },
   {
+    "modelType": "image",
+    "provider": "openai-compatible",
+    "modelId": "gpt-image-2",
+    "capabilities": {
+      "image": {}
+    }
+  },
+  {
     "modelType": "video",
     "provider": "google",
     "modelId": "veo-3.1-generate-preview",

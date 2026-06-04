@@ -1705,6 +1705,10 @@ export const GET = apiHandler(async () => {
     { type: 'video', modelId: 'veo-3.0-fast-generate-001', name: 'Veo 3.0 Fast' },
     { type: 'video', modelId: 'veo-2.0-generate-001', name: 'Veo 2.0' },
   ]
+  // 对每个 openai-compatible provider，注入尚未保存过的 OpenAI preset 模型（disabled，带完整 capabilities）
+  const OPENAI_COMPATIBLE_PRESETS: { type: UnifiedModelType; modelId: string; name: string }[] = [
+    { type: 'image', modelId: 'gpt-image-2', name: 'GPT Image 2' },
+  ]
   const savedModelKeys = new Set(pricedModels.map((m) => m.modelKey))
   const disabledPresets: (StoredModel & { enabled: false })[] = []
   for (const p of providers) {
@@ -1721,6 +1725,24 @@ export const GET = apiHandler(async () => {
         provider: p.id,
         price: 0,
         // alias 回退自动从 google catalog 获取 capabilities
+        capabilities: findBuiltinCapabilities(preset.type, p.id, preset.modelId),
+      }
+      disabledPresets.push({ ...withDisplayPricing(base, pricingDisplay), enabled: false })
+    }
+  }
+  for (const p of providers) {
+    if (getProviderKey(p.id) !== 'openai-compatible') continue
+    for (const preset of OPENAI_COMPATIBLE_PRESETS) {
+      const modelKey = composeModelKey(p.id, preset.modelId)
+      if (!modelKey || savedModelKeys.has(modelKey)) continue
+      savedModelKeys.add(modelKey)
+      const base: StoredModel = {
+        modelId: preset.modelId,
+        modelKey,
+        name: preset.name,
+        type: preset.type,
+        provider: p.id,
+        price: 0,
         capabilities: findBuiltinCapabilities(preset.type, p.id, preset.modelId),
       }
       disabledPresets.push({ ...withDisplayPricing(base, pricingDisplay), enabled: false })

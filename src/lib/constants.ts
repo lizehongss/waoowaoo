@@ -53,7 +53,8 @@ export const IMAGE_MODEL_OPTIONS = [
   { value: 'doubao-seedream-4-5-251128', label: 'Seedream 4.5' },
   { value: 'imagen-4.0-generate-001', label: 'Imagen 4.0 (Google)' },
   { value: 'imagen-4.0-ultra-generate-001', label: 'Imagen 4.0 Ultra' },
-  { value: 'imagen-4.0-fast-generate-001', label: 'Imagen 4.0 Fast' }
+  { value: 'imagen-4.0-fast-generate-001', label: 'Imagen 4.0 Fast' },
+  { value: 'gpt-image-2', label: 'GPT Image 2 (OpenAI)' }
 ]
 
 // Banana 模型分辨率选项（仅用于九宫格分镜图，单张生成固定2K）
