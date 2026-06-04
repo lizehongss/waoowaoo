@@ -35,7 +35,9 @@ export const ANALYSIS_MODELS = [
   { value: 'google/gemini-3-flash-preview', label: 'Gemini 3 Flash' },
   { value: 'google/gemini-3.1-flash-lite-preview', label: 'Gemini 3.1 Flash-Lite' },
   { value: 'anthropic/claude-sonnet-4.5', label: 'Claude Sonnet 4.5' },
-  { value: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4' }
+  { value: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4' },
+  { value: 'deepseek-chat', label: 'DeepSeek V3' },
+  { value: 'deepseek-reasoner', label: 'DeepSeek R1' }
 ]
 
 export const IMAGE_MODELS = [
@@ -82,7 +84,8 @@ export const VIDEO_MODELS = [
   { value: 'fal-sora2', label: 'Sora 2' },
   { value: 'fal-ai/kling-video/v2.5-turbo/pro/image-to-video', label: 'Kling 2.5 Turbo Pro' },
   { value: 'fal-ai/kling-video/v3/standard/image-to-video', label: 'Kling 3 Standard' },
-  { value: 'fal-ai/kling-video/v3/pro/image-to-video', label: 'Kling 3 Pro' }
+  { value: 'fal-ai/kling-video/v3/pro/image-to-video', label: 'Kling 3 Pro' },
+  { value: 'wan2.7-i2v', label: 'Wan 2.7 I2V' }
 ]
 
 // SeeDream 批量模型列表（使用 GPU 空闲时间，成本降低50%）
